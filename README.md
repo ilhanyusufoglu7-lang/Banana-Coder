@@ -10,7 +10,7 @@ Banana Coder
 
 Terminal tabanli, cok saglayicili bir yapay zeka kodlama ajani. OpenRouter, Anthropic, OpenAI ve Google Gemini API'lerini ya da kendi indirdigin yerel GGUF modellerini tek bir etkilesimli REPL'den kullaniyor. Dosya sistemine tam erisim var: kod yazar, dosya okur, komut calistirir; her sey senin onayinla ya da tam otomatik modda.
 
-Arayuz Turkce, ASCII banner'li, emoji'siz. Kodun icinde tek bir API anahtari bile gomulu degil.
+Arayuz Turkce, ASCII banner'li, emoji'siz. Etkilesimli modda tam ekran Textual arayuzu acilir; istersen `/gui` ile ayni ajan ayri bir masaustu IDE penceresinde de calisir. Kodun icinde tek bir API anahtari bile gomulu degil.
 
 ## Icerik
 
@@ -18,11 +18,14 @@ Arayuz Turkce, ASCII banner'li, emoji'siz. Kodun icinde tek bir API anahtari bil
 - Gereksinimler
 - Kurulum
 - Calistirma
+- Arayuz (Textual TUI)
+- Masaustu IDE (PyQt5 Fluent)
 - Hizli baslangic
 - API anahtarlari
 - Komutlar
 - Araclar ve onay modlari
 - Hazir model kisayollari
+- Tum OpenRouter modelleri
 - Yerel GGUF modelleri
 - Sesli yanit (TTS)
 - Prompt upgrade (boost)
@@ -37,15 +40,17 @@ Arayuz Turkce, ASCII banner'li, emoji'siz. Kodun icinde tek bir API anahtari bil
 
 ## Ozellikler
 
-- **Claude Code benzeri REPL.** ASCII banner, `readline` sekme tamamlama, numarali secimler, `/menu` ana menu, renkli tablolar (Rich).
+- **Textual tam ekran TUI.** Piksel banner, kesikli cerceveli paneller, sagda canli islem akisi, slash komut onerileri ve alt durum cubugu. Renkli cikti Textual widget'lariyla cizilir; Rich'e bagimlilik yok. `--no-tui` ile eski duz akis moduna donulur.
+- **Masaustu IDE.** `/gui` (veya `banana --gui`) dosya agaci, sekmeli kod editoru ve sohbet panelini PyQt5 ile cizilmis Fluent tasarimli tek pencerede acar; ayni model, oturum araclari ve onay sistemi calisir. Komut paleti, tema paletleri, ayar penceresi ve mikro animasyonlarla gelir.
 - **Cok saglayicili.** OpenRouter, Anthropic, OpenAI, Gemini ve yerel GGUF tek arayuzde; model degistirmek tek komut.
 - **Etkilesimli kurulum.** `.env` zorunlu degil: anahtari `/api openrouter` ile terminalde girersin, `~/.banana/config.json` dosyasina yazar.
 - **Yerel ve cevrimdisi.** HuggingFace'ten tek komutla GGUF indir (`/model indir`), 8 GB RAM gibi dusuk makinelerde calisan kucuk quant'larla (Q2_K, Q4_K_M) API anahtarsiz calis.
-- **Ucretsiz model tarayicisi.** `/models free` OpenRouter'in ucretsiz modellerini listeler; `or-free` kisayolu ile secersin.
+- **Ucretsiz model tarayicisi.** `/models free` OpenRouter'in ucretsiz modellerini listeler ve secmeni saglar; `or-free` kisayolu ile secersin.
+- **Tum OpenRouter katalogu.** `/model remote` 400'den fazla modeli arama ve sayfalama ile gezdirir; secim aninda model degisir. Arac desteklemeyen modeller otomatik sohbet moduna gecer.
 - **Gercek arac seti.** `read_file`, `write_file`, `edit_file`, `list_dir`, `glob`, `grep`, `bash`, `web_fetch`.
 - **Uc onay modu.** `ask` (varsayilan, her yazma/komut adiminda sorar), `yolo` (hepsi otomatik), `readonly` (yalnizca okuma).
 - **Prompt upgrade (boost).** Yazdigin prompt once ikinci bir "upgrade" modeline verilir, yeniden yazilmis hali kodlama AI'ina gider.
-- **Canli islem paneli (preview).** tmux varsa ekran ikiye ayrilir; yoksa `PV ...` satirlari akista akar. Her olay `~/.banana/preview.log` kuyrugunda.
+- **Canli islem paneli (preview).** `/preview on` yazinca sag panelde arac cagrilari ve ag istekleri olay olay akar; duz modda `PV ...` satirlari ya da tmux bolmesi kullanilir. Her olay `~/.banana/preview.log` kuyrugunda.
 - **Sesli yanit (TTS).** AI'in yaniti OpenRouter'in ucretsiz HeyGen TTS modeli ile seslendirilir.
 - **Oturum kaliciligi.** Konusmalar dizin bazli kaydedilir; `-c` ile devam ettir, `--session AD` ile isimlendir.
 - **Maliyet gorunurlugu.** `/usage` token ve maliyet ozeti verir.
@@ -56,7 +61,7 @@ Arayuz Turkce, ASCII banner'li, emoji'siz. Kodun icinde tek bir API anahtari bil
 - Python 3.10 veya uzeri
 - Bash/terminal (macOS veya Linux onerilir; Windows'ta WSL tavsiye edilir)
 - En az bir saglayici icin API anahtari (yerel GGUF modelleri icin gerekmez)
-- Opsiyonel: `tmux` (canli panel icin gercek ekran bolmesi), `cmake` (yerel GGUF derlemesi), `afplay`/`ffplay`/`mpv`/`aplay`/`paplay` (ses cikisi), `ripgrep` (`grep` araci icin)
+- Opsiyonel: `tmux` (yalnizca `--no-tui` duz moddaki canli panel icin), `cmake` (yerel GGUF derlemesi), `afplay`/`ffplay`/`mpv`/`aplay`/`paplay` (ses cikisi), `ripgrep` (`grep` araci icin), PyQt5 (masaustu IDE)
 
 ## Kurulum
 
@@ -70,6 +75,9 @@ pip install -e .
 # Yerel GGUF modelleri icin (opsiyonel ama onerilen):
 pip install -e ".[local]"
 # not: llama-cpp-python makinede derlenir; cmake kuruluysa sorun cikmaz
+
+# Masaustu IDE icin (opsiyonel):
+pip install -e ".[gui]"
 ```
 
 `llama-cpp-python` derlenmezse sorun olmaz: yerel model disinda her sey calisir. Sanal ortamdan cikmak istersek `deactivate`.
@@ -77,7 +85,9 @@ pip install -e ".[local]"
 ## Calistirma
 
 ```bash
-banana                            # etkilesimli REPL
+banana                            # tam ekran Textual arayuzu
+banana --gui                      # masaustu IDE penceresi (editor + sohbet)
+banana --no-tui                   # duz akis modu (tmux/terminal uyumlulugu)
 banana -p "su dosyayi incele"     # tek atislik istek, cikip biter
 banana -m or-free                 # ucretsiz OpenRouter modeliyle basla
 banana -m "local/models/qwen.gguf"  # yerel GGUF ile basla
@@ -104,6 +114,8 @@ Bayraklar:
 | `--show-reasoning` | Modelin dusunme akisini goster |
 | `--json` | Tek seferlik modda sonucu JSON yaz (yalnizca `-p` ile) |
 | `--no-color` | Renkleri kapat |
+| `--no-tui` | Tam ekran arayuzu kapat, duz REPL akisini kullan |
+| `--gui` | Masaustu IDE penceresini ac (PyQt5 Fluent) |
 | `--version` | Surumu yaz |
 
 Alt komutlar:
@@ -113,6 +125,62 @@ banana test [openrouter anthropic openai gemini]   # anahtar/saglayici baglanti 
 banana models --free                               # ucretsiz OpenRouter modelleri
 banana models --remote                             # OpenRouter canli model listesi
 ```
+
+## Arayuz (Textual TUI)
+
+Etkilesimli mod bir TTY'de tam ekran Textual arayuzu olarak acilir. Ekran dort katmandir:
+
+- **Ust:** piksel ASCII banner, surum satiri ve kesikli cerceveli bilgi kutusu (model, saglayici, dizin, onay modu).
+- **Orta:** solda konusma akisi; `/preview on` yazinca sagda canli islem paneli.
+- **Alt:** slash komut onerileri (yazarken filtrelenir, aciklamalariyla) ve giris satiri. Onay sorulari da ayni giris satirinda `Onayla? [e]vet / [h]ayir / [t]umu` olarak belirir.
+- **En alt:** surekli durum cubugu (model, onay modu, token, dizin).
+
+Kisayollar:
+
+| Tus | Is |
+|-----|----|
+| `Ctrl+C` | Cikis |
+| `Ctrl+L` | Konusmayi temizle |
+| `Ctrl+P` | Canli islem panelini ac/kapat |
+| `F1` | Yardim (komut listesi) |
+
+Tek satirlik girisler TUI icinde ayni giris satirini kullanir (API anahtari gizli girilir). TUI yalnizca gercek bir terminalde acilir; boru/CI veya `BANANA_NO_TUI=1` durumunda duz mod otomatik devreye girer.
+
+## Masaustu IDE (PyQt5 Fluent)
+
+`/gui` yazinca ajan ayri bir masaustu penceresinde acilir; ayni model, oturum, araclar ve onay modu gecerli kalir. Arayuz saf PyQt5 + QSS ile cizilen Fluent tasarimli bir IDE'dir: koyu yuzeyler, yumusak kartlar, aksan rengi odak halkalari ve yuvarlak koseler. Ekran uc paneldir:
+
+- **Sol:** dosya agaci. Klasor adi cift tiklayinca tembel yuklenir, dosya cift tiklayinca sekmeli editor'de acilir. Gizli dosyalar ve `.venv`, `node_modules`, `__pycache__` gibi agir klasorler gizlenir. `Ctrl+B` ile daraltilir; durum hatirlanir.
+- **Orta:** sekmeli kod editoru; satir numaralari, aktif satir vurgusu, Python sozdizimi renklendirmesi ve degisiklik isareti (`*`). Kaydetmeden sekme kapatilirsa onay istenir.
+- **Sag:** sohbet paneli. Mesajlar kullanici/ajan balonlari halinde, arac cagrilari ve onay sorulari ayni akista gorunur. Ust kosedeki mod cipi yazdigin girdiyi aninda etiketler: `sohbet`, `komut` (`/`) veya `kabuk` (`!`).
+- **Ust/alt cubuk:** model etiketi, onay modu (`ask`/`yolo`/`readonly`), arac anahtari, durum ve token/maliyet. Ust cubukta ayrica komut paleti ve ayarlar dugmeleri vardir.
+
+Fluent ayrintilar:
+
+- **Komut paleti (`Ctrl+K`).** Ekranin ortasinda acilan arama kutusu; tum komutlar, sekmeler ve temalar arasinda yazarak filtrele, `Enter` ile calistir.
+- **Ayarlar (`Ctrl+,`).** Solda gezinme, sagda kartlar: tema rengi, hareket, kenar cubugu, onay modu, arac anahtari, ayar dosyasi yolu ve kisayol listesi.
+- **Temalar.** `Banana`, `Nane`, `Gokyuzu`, `Gul`, `Menekse`. Secim aninda tum yuzey, ikon ve odak halkalari yeniden cizilir; `~/.banana/gui.ini` icine kaydedilir.
+- **Bildirimler (toast).** Kaydetme, yenileme ve klasor degistirme gibi islemler altta kisa sureli, kendiliginden kapanan bir serit gosterir.
+- **Hareket.** Basma dalgasi (ripple), kenar cubugu kaydirma ve akan yanit cercevesi 150-250 ms ile sinirlidir; `prefers-reduced-motion` benzeri `Ayarlar > Hareket` anahtari veya `BANANA_NO_MOTION=1` ile kapatilir.
+
+Kisayollar:
+
+| Tus | Is |
+|-----|----|
+| `Ctrl+S` (`Command+S`) | Aktif dosyayi kaydet |
+| `Ctrl+N` (`Command+N`) | Yeni dosya (yol sorulur) |
+| `Ctrl+O` (`Command+O`) | Klasor ac (calisma dizinini degistirir) |
+| `Ctrl+W` (`Command+W`) | Aktif sekmeyi kapat |
+| `Ctrl+K` (`Command+K`) | Komut paletini ac |
+| `Ctrl+,` (`Command+,`) | Fluent ayarlari ac |
+| `Ctrl+B` | Kenar cubugunu daralt/genislet |
+| `Ctrl+R` | Dosya agacini yenile |
+| `Enter` | Mesaji gonder |
+| `Shift+Enter` | Sohbette yeni satir |
+
+Sohbet kutusunda slash komutlari (`/model`, `/tools off`, `/help`, ...) ve `!komut` ile kabuk komutlari aynen calisir. `/gui [dizin]` vererek pencereyi baska bir klasorde acabilirsin.
+
+`/gui` pencereyi ayri bir surecte baslatir (Textual REPL kapanmaz), ciktisini `~/.banana/gui.log` dosyasina yazar. Pencere icinden tekrar `/gui` calistirmak yeni pencere acmaz (`BANANA_GUI=1` korumasi). Masaustu arayuz icin PyQt5 gerekir: `pip install PyQt5` ya da `pip install -e ".[gui]"`. PyQt5 yoksa `--gui` aciklayici bir hata verir ve terminal arayuzu bozulmaz.
 
 ## Hizli baslangic
 
@@ -163,11 +231,13 @@ Anahtar durumunu `/keys`, tam ayari `/config` ile gorursun. `/api` anahtarlari a
 | Komut | Aciklama |
 |-------|----------|
 | `/model [ad]` | Model degistir; bos birakilirsan numarali secici acilir |
+| `/model remote [ara]` | OpenRouter katalogunun tamami: arama, sayfalama ve aninda secim |
 | `/model local` | Model klasorlerindeki GGUF dosyalarindan sec |
 | `/model indir [no\|URL]` | HuggingFace'ten yerel GGUF modeli indir |
 | `/models` | Hazir kisayollari listele |
-| `/models free` | OpenRouter ucretsiz modellerini listele |
-| `/models remote` | OpenRouter canli model listesi |
+| `/models remote [ara]` | OpenRouter katalogunu ac ve model sec |
+| `/models free [ara]` | OpenRouter ucretsiz modellerinden sec |
+| `/tools on\|off` | Arac cagrilarini ac/kapat (sohbet modeli icin) |
 | `/api [saglayici] [anahtar]` | Anahtar goruntule / kaydet / sil |
 | `/keys` | Anahtar durum ve kaynaklari |
 | `/menu` | Etkilesimli ana menu |
@@ -183,12 +253,13 @@ Anahtar durumunu `/keys`, tam ayari `/config` ile gorursun. `/api` anahtarlari a
 | `/voice test` | Ornek cumleyi seslendir |
 | `/boost on\|off` | Yazdigin promptu once upgrade modeline yeniden yazdir |
 | `/boost model [ad]` | Upgrade modelini sec veya degistir |
-| `/preview on\|off` | Islemlerin aktigi canli panel (tmux bolmesi veya akis satirlari) |
-| `/preview height 20-70` | tmux bolme genisligi (yuzde) |
+| `/preview on\|off` | Islemlerin aktigi canli panel (TUI'de sag panel, duz modda akis/tmux) |
+| `/preview height 20-70` | Canli panel genisligi (yuzde) |
 | `/preview log` | Olay kuyruk dosyasi ve `tail -f` tarifi |
 | `/session` | Aktif oturum dosyasi bilgisi |
 | `/sessions` | Bu dizindeki son oturumlar |
 | `/config` | Etkin ayarlar |
+| `/gui [dizin]` | Masaustu IDE penceresini ac (ayri surec, `~/.banana/gui.log`) |
 | `/help` | Tum komutlar |
 | `!komut` | Kabuk komutunu dogrudan calistir |
 | `@dosya` | Mesaja dosya icerigi ekle |
@@ -223,7 +294,36 @@ or-deepseek, or-qwen                        OpenRouter uzerinden
 or-free, or-free-gemma, or-free-nemotron    OpenRouter ucretsiz
 ```
 
-Kisayol listede yoksa ham model kimligi de yazabilirsin: `/model anthropic/claude-sonnet-4.5`.
+Kisayol listede yoksa ham model kimligi de yazabilirsin: `/model openrouter/meta-llama/llama-3.3-70b-instruct`. Kimlik `anthropic/`, `openai/` veya `google/` ile basliyorsa dogrudan saglayici sanilmasin diye `openrouter/` onekini kullan.
+
+## Tum OpenRouter modelleri
+
+OpenRouter katalogundaki her model secilebilir. Komut canli listeyi indirir; sayfalama ve arama ile gezersin:
+
+```
+/model remote                   # tum katalog, ilk sayfa
+/model remote qwen              # "qwen" iceren modellerle basla
+/models free                    # yalnizca ucretsiz modeller
+```
+
+Secici komutlari:
+
+| Giris | Is |
+|-------|----|
+| `12` | Listelenen numarali modeli sec ve hemen aktive et |
+| `a <metin>` | Model kimligi ve adinda ara (ornek: `a claude`) |
+| `a` | Aramayi temizle, tam listeye don |
+| `+` / `-` | Sonraki / onceki sayfa |
+| `vendor/model` | Katalogda gezmeden dogrudan kimlik gir |
+| bos Enter | Iptal |
+
+Tablodaki `Arac` sutunu modelin arac cagrisini destekleyip desteklemedigini gosterir:
+
+- `var`: dosya, kabuk ve web araclari calisir.
+- `yok`: model secildiginde araclar otomatik kapanir ve model yalnizca sohbet eder; `/tools on` ile elle acabilirsin (model desteklemiyorsa istek hata verir).
+- `?`: katalog bu bilgiyi vermiyor; varsayilan olarak araclar acik kalir.
+
+Arac durumu model bazinda hatirlanir: secim `~/.banana/config.json` icine yazilir, ayni modelle yeniden acildiginda korunur. `/tools on|off` ile elle degistirebilirsin. Komut satirindan listelemek icin: `banana models --remote`, ucretsizler icin `banana models --free`.
 
 ## Yerel GGUF modelleri
 
@@ -284,21 +384,21 @@ Acikken yazdigin prompt ilk olarak ikinci bir "upgrade" modeline gider; o model 
 
 ## Canli islem paneli (preview)
 
-`/preview on` yazinca ekran ikiye ayrilir: sagdaki panelde yapay zekanin yaptigi her isi olay olay gorursun: arac cagrilari (`read_file`, `write_file`, `bash`), komutlarda gecen URL'ler, `web_fetch` istekleri (`GET https://...`), model indirmeleri, TTS cagrilari, prompt upgrade ve hatalar.
+`/preview on` yazinca sagdaki panelde yapay zekanin yaptigi her isi olay olay gorursun: arac cagrilari (`read_file`, `write_file`, `bash`), komutlarda gecen URL'ler, `web_fetch` istekleri (`GET https://...`), model indirmeleri, TTS cagrilari, prompt upgrade ve hatalar.
 
 ```
 /preview on              # paneli ac
 /preview off             # kapat
 /preview                 # durum + son olaylar
-/preview height 25       # tmux bolme genisligi (yuzde, 20-70)
+/preview height 25       # panel genisligi (yuzde, 20-70)
 /preview log             # kuyruk dosyasi ve tail -f tarifi
 ```
 
 Nasil calisir:
 
 - Olaylar `~/.banana/preview.log` kuyruk dosyasina yazilir (son 200 satir ekrana hazir sekilde tutulur, dosya 1 MB'i asinca kisalir).
-- **tmux varsa** ekran dikey bolunur ve panel bu kuyrugu `tail -f` ile canli gosterir. Kurulum: `brew install tmux`.
-- **tmux yoksa** ayni satirlar banana icinde `PV ...` olarak akista gorunur; istersen ayri bir terminalde `tail -f ~/.banana/preview.log` ile izlersin.
+- **Textual arayuzunde** panel uygulamanin sag tarafinda acilir; olaylar oraya canli eklenir.
+- **`--no-tui` duz modda** tmux varsa ekran dikey bolunur ve panel kuyrugu `tail -f` ile gosterir (`brew install tmux`); tmux yoksa ayni satirlar `PV ...` olarak akista gorunur.
 - `-p` tek seferlik modda ekrana yazilmaz, kuyruk dosyasi yine dolar.
 - Panel ayari kaydedilir; bir sonraki acilista otomatik gelir.
 
@@ -322,7 +422,9 @@ Yapay zekanin `web_fetch` araci bir adresi indirir, HTML'i temizleyip duz metin 
 
 ## Ayar dosyasi ve ortam degiskenleri
 
-`~/.banana/config.json` secili model, kayitli API anahtarlari, yerel model yolu, ses, prompt upgrade ve canli panel ayarlarini tutar. `/api`, `/model`, `/voice`, `/boost`, `/preview` ve `/config` komutlari buraya yazar. Yazma islemi atomik yapilir (gecici dosya + tasma).
+`~/.banana/config.json` secili model, kayitli API anahtarlari, yerel model yolu, ses, prompt upgrade ve canli panel ayarlarini tutar. `/api`, `/model`, `/voice`, `/boost` ve `/preview` komutlari buraya yazar. Secilen model ve model bazli arac destegi (`model_tools`) de kaydedilir; bir sonraki acilista ayni model ve araç modu gelir. Yazma islemi atomik yapilir (gecici dosya + tasma).
+
+Masaustu IDE'nin kendi durumu ayri bir dosyada durur: `~/.banana/gui.ini` (QSettings). Tema rengi, hareket anahtari, kenar cubugu durumu ve pencere boyutu burada saklanir; `config.json`'a dokunmaz.
 
 Klasoru degistirmek icin: `BANANA_HOME=/baska/yol banana`
 
@@ -334,6 +436,8 @@ Klasoru degistirmek icin: `BANANA_HOME=/baska/yol banana`
 | `BANANA_LOCAL_MODEL` | Varsayilan yerel GGUF yolu |
 | `BANANA_ALLOW_PRIVATE_URLS` | `web_fetch` icin yerel/ozel ag yasagini kaldir |
 | `BANANA_ONE_SHOT` | Tek seferlik modda panel satirlarini ekrana yazdirma |
+| `BANANA_NO_TUI` | `1` ise tam ekran arayuzu kapat, duz mod kullan |
+| `BANANA_NO_MOTION` | `1` ise masaustu IDE'de animasyonlari kapat |
 | `NO_COLOR` | Renkleri kapat |
 
 Varsayilanlar: model secilmedi, onay modu `ask`, `max_tokens` 8192, baglanti zamani 600 sn, arac cikti limiti 30.000 karakter, `boost` ve `preview` kapali.
@@ -354,7 +458,7 @@ pip install pytest
 python -m pytest tests -q
 ```
 
-Testler gercek API'ye gitmez: yerel bir SSE sahte sunucusu (OpenRouter uyumlu) uzerinden calisir; saglayici cagrilarinin hicbiri disariya cikmaz. Tarayici/istemci testleri icin `BANANA_ALLOW_PRIVATE_URLS=1` kullanilir.
+Testler gercek API'ye gitmez: yerel bir SSE sahte sunucusu (OpenRouter uyumlu) uzerinden calisir; saglayici cagrilarinin hicbiri disariya cikmaz. Tarayici/istemci testleri icin `BANANA_ALLOW_PRIVATE_URLS=1` kullanilir. Masaustu IDE testleri PyQt5 gerektirir; PyQt5 yoksa ilgili testler atlanir.
 
 ## Proje yapisi
 
@@ -368,8 +472,10 @@ banana/
   hf.py           GGUF indirme (HuggingFace)
   tts.py          OpenRouter HeyGen seslendirme (PCM -> WAV)
   booster.py      prompt upgrade (boost) modeli cagrisi
-  preview.py      canli islem paneli: olay kuyrugu + tmux bolmesi
-  ui.py           banner, renk, tablo ve giris yardimi
+  preview.py      canli islem paneli: olay kuyrugu + dinleyici/tmux bolmesi
+  ui.py           ANSI tabanli duz arayuz (TUI olmayan mod)
+  tui.py          Textual tam ekran arayuz (banner, paneller, giris, durum)
+  gui.py          PyQt5 Fluent masaustu IDE (dosya agaci, editor, sohbet)
   providers/      openai-compat, anthropic, gemini, local (GGUF)
   tools/          dosya, kabuk ve web (web_fetch) araclari
 main.py           giris noktasi (banana paketini cagirir)
